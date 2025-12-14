@@ -25,4 +25,8 @@ namespace WebProjeGym.Models
         [StringLength(200)]
         public string Goal { get; set; } // "kilo verme", "kas geliştirme" gibi
     }
+    public class Temp
+    {
+        public int Id { get; set; }
+    }
 }

@@ -13,9 +13,29 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = false;
+        // Ödev gereği admin şifresi 'sau' olabilsin diye parola kurallarını basitleştiriyoruz
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredLength = 3;
+    })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// #region agent log
+System.IO.File.AppendAllText(
+    "c:\\Users\\ASUS\\Desktop\\Hafta2Web\\WebProjeGym\\.cursor\\debug.log",
+    "{\"sessionId\":\"debug-session\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H1\",\"location\":\"Program.cs:20\",\"message\":\"Configured identity with ApplicationUser\",\"data\":{\"userType\":\"ApplicationUser\"},\"timestamp\":"
+    + DateTimeOffset.Now.ToUnixTimeMilliseconds() + "}\n");
+System.IO.File.AppendAllText(
+    "c:\\Users\\ASUS\\Desktop\\Hafta2Web\\WebProjeGym\\.cursor\\debug.log",
+    "{\"sessionId\":\"debug-session\",\"runId\":\"post-fix\",\"hypothesisId\":\"V1\",\"location\":\"Program.cs:21\",\"message\":\"Post-fix verification startup\",\"data\":{},\"timestamp\":"
+    + DateTimeOffset.Now.ToUnixTimeMilliseconds() + "}\n");
+// #endregion
 
 var app = builder.Build();
 

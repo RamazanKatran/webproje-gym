@@ -1,0 +1,41 @@
+@model IEnumerable<WebProjeGym.Models.Service>
+
+@{
+    ViewData["Title"] = "Hizmetler";
+}
+
+<h1 class="mt-3">Hizmetler</h1>
+
+<p>
+    <a class="btn btn-primary" asp-action="Create">Yeni Hizmet Ekle</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Ad</th>
+            <th>Salon</th>
+            <th>Süre (dk)</th>
+            <th>Ücret</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model)
+{
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.GymBranch?.Name</td>
+            <td>@item.DurationMinutes</td>
+            <td>@item.Price.ToString("C")</td>
+            <td>
+                <a class="btn btn-sm btn-info" asp-action="Details" asp-route-id="@item.Id">Detay</a>
+                <a class="btn btn-sm btn-warning" asp-action="Edit" asp-route-id="@item.Id">Düzenle</a>
+                <a class="btn btn-sm btn-danger" asp-action="Delete" asp-route-id="@item.Id">Sil</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+

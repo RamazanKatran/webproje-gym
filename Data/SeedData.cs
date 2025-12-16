@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
+using WebProjeGym.Models;
 
 namespace WebProjeGym.Data
 {

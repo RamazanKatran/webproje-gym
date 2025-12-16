@@ -23,18 +23,40 @@ namespace WebProjeGym.Data
         {
             base.OnModelCreating(builder);
 
+            // Trainer - Service çoktan çoğa
             builder.Entity<TrainerService>()
                 .HasKey(ts => new { ts.TrainerId, ts.ServiceId });
 
             builder.Entity<TrainerService>()
                 .HasOne(ts => ts.Trainer)
                 .WithMany(t => t.TrainerServices)
-                .HasForeignKey(ts => ts.TrainerId);
+                .HasForeignKey(ts => ts.TrainerId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<TrainerService>()
                 .HasOne(ts => ts.Service)
                 .WithMany(s => s.TrainerServices)
-                .HasForeignKey(ts => ts.ServiceId);
+                .HasForeignKey(ts => ts.ServiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Appointment ilişkilerinde birden fazla cascade path olmaması için silme davranışını Restrict yapıyoruz
+            builder.Entity<Appointment>()
+                .HasOne(a => a.Trainer)
+                .WithMany(t => t.Appointments)
+                .HasForeignKey(a => a.TrainerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Appointment>()
+                .HasOne(a => a.Service)
+                .WithMany(s => s.Appointments)
+                .HasForeignKey(a => a.ServiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Appointment>()
+                .HasOne(a => a.MemberProfile)
+                .WithMany()
+                .HasForeignKey(a => a.MemberProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

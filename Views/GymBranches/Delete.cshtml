@@ -1,0 +1,27 @@
+@model WebProjeGym.Models.GymBranch
+
+@{
+    ViewData["Title"] = "Salon Sil";
+}
+
+<h1 class="mt-3">Spor Salonu Sil</h1>
+
+<h3>Bu salonu silmek istediğinize emin misiniz?</h3>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <h4 class="card-title">@Model.Name</h4>
+        <p class="card-text">
+            <strong>Adres:</strong> @Model.Address<br />
+            <strong>Çalışma Saatleri:</strong> @Model.OpeningTime - @Model.ClosingTime
+        </p>
+    </div>
+</div>
+
+<form asp-action="Delete" method="post" class="mt-3">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Sil</button>
+    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+</form>
+
+

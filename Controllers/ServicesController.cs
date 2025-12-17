@@ -22,7 +22,11 @@ namespace WebProjeGym.Controllers
         {
             var services = _context.Services
                 .Include(s => s.GymBranch);
-            return View(await services.ToListAsync());
+            var list = await services.ToListAsync();
+            // #region agent log
+            try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "service-index", hypothesisId = "S4", location = "ServicesController.Index", message = "Index loaded", data = new { count = list.Count }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+            // #endregion
+            return View(list);
         }
 
         // GET: Services/Details/5
@@ -56,12 +60,24 @@ namespace WebProjeGym.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Service service)
         {
+            // #region agent log
+            try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "service-create", hypothesisId = "S1", location = "ServicesController.Create", message = "Create POST called", data = new { name = service?.Name, gymBranchId = service?.GymBranchId }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+            // #endregion
             if (ModelState.IsValid)
             {
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "service-create", hypothesisId = "S2", location = "ServicesController.Create", message = "ModelState valid, saving", data = new { }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
                 _context.Add(service);
                 await _context.SaveChangesAsync();
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "service-create", hypothesisId = "S2", location = "ServicesController.Create", message = "Service saved", data = new { id = service.Id }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
                 return RedirectToAction(nameof(Index));
             }
+            // #region agent log
+            try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "service-create", hypothesisId = "S3", location = "ServicesController.Create", message = "ModelState invalid", data = new { errors = ModelState.Where(x => x.Value.Errors.Count > 0).Select(x => new { field = x.Key, errors = x.Value.Errors.Select(e => e.ErrorMessage) }) }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+            // #endregion
             ViewData["GymBranchId"] = new SelectList(_context.GymBranches, "Id", "Name", service.GymBranchId);
             return View(service);
         }

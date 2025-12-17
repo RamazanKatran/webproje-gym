@@ -17,7 +17,7 @@ namespace WebProjeGym.Models
         public decimal Price { get; set; }
 
         [StringLength(500)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Required]
         public int GymBranchId { get; set; }

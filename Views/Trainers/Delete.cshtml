@@ -1,0 +1,25 @@
+@model WebProjeGym.Models.Trainer
+
+@{
+    ViewData["Title"] = "Antrenör Sil";
+}
+
+<h1 class="mt-3">Antrenör Sil</h1>
+
+<h3>Bu antrenörü silmek istediğinizden emin misiniz?</h3>
+<div class="card mt-3">
+    <div class="card-body">
+        <h4>@Model.FirstName @Model.LastName</h4>
+        <p class="card-text">
+            <strong>Salon:</strong> @Model.GymBranch?.Name<br />
+            <strong>Uzmanlık:</strong> @Model.Specialization
+        </p>
+    </div>
+</div>
+
+<form asp-action="Delete" method="post" class="mt-3">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Sil</button>
+    <a asp-action="Index" class="btn btn-secondary">İptal</a>
+</form>
+

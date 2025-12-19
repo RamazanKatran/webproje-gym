@@ -1,0 +1,27 @@
+@model WebProjeGym.Models.Appointment
+
+@{
+    ViewData["Title"] = "Randevu İptal";
+}
+
+<h1 class="mt-3">Randevu İptal</h1>
+
+<h3>Bu randevuyu iptal etmek istediğinizden emin misiniz?</h3>
+<div class="card mt-3">
+    <div class="card-body">
+        <p class="card-text">
+            <strong>Antrenör:</strong> @(Model.Trainer != null ? $"{Model.Trainer.FirstName} {Model.Trainer.LastName}" : "")<br />
+            <strong>Hizmet:</strong> @Model.Service?.Name<br />
+            <strong>Tarih:</strong> @Model.StartDateTime.ToString("dd.MM.yyyy")<br />
+            <strong>Saat:</strong> @Model.StartDateTime.ToString("HH:mm") - @Model.EndDateTime.ToString("HH:mm")<br />
+            <strong>Fiyat:</strong> @Model.Price.ToString("C")
+        </p>
+    </div>
+</div>
+
+<form asp-action="Delete" method="post" class="mt-3">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">İptal Et</button>
+    <a asp-action="Index" class="btn btn-secondary">Geri Dön</a>
+</form>
+

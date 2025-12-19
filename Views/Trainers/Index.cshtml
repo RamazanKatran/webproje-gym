@@ -1,0 +1,76 @@
+@model IEnumerable<WebProjeGym.Models.Trainer>
+
+@{
+    ViewData["Title"] = "Antrenörler";
+}
+
+<h1 class="mt-3">Antrenörler</h1>
+
+<p>
+    <a class="btn btn-primary" asp-action="Create">Yeni Antrenör Ekle</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Ad Soyad</th>
+            <th>Salon</th>
+            <th>Uzmanlık</th>
+            <th>Verdiği Hizmetler</th>
+            <th>Müsaitlik Saatleri</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model)
+{
+        <tr>
+            <td>@item.FirstName @item.LastName</td>
+            <td>@item.GymBranch?.Name</td>
+            <td>@item.Specialization</td>
+            <td>
+                @if (item.TrainerServices != null && item.TrainerServices.Any())
+                {
+                    @foreach (var ts in item.TrainerServices.Take(3))
+                    {
+                        <span class="badge bg-primary me-1">@ts.Service?.Name</span>
+                    }
+                    @if (item.TrainerServices.Count > 3)
+                    {
+                        <span class="text-muted">+@(item.TrainerServices.Count - 3) daha</span>
+                    }
+                }
+                else
+                {
+                    <span class="text-muted">-</span>
+                }
+            </td>
+            <td>
+                @if (item.TrainerAvailabilities != null && item.TrainerAvailabilities.Any())
+                {
+                    @foreach (var avail in item.TrainerAvailabilities.OrderBy(a => a.DayOfWeek).Take(2))
+                    {
+                        <small class="d-block">
+                            <span class="badge bg-success">@DayOfWeekHelper.GetTurkishName(avail.DayOfWeek): @avail.StartTime.ToString(@"hh\:mm")-@avail.EndTime.ToString(@"hh\:mm")</span>
+                        </small>
+                    }
+                    @if (item.TrainerAvailabilities.Count > 2)
+                    {
+                        <small class="text-muted">+@(item.TrainerAvailabilities.Count - 2) daha</small>
+                    }
+                }
+                else
+                {
+                    <span class="text-muted">-</span>
+                }
+            </td>
+            <td>
+                <a class="btn btn-sm btn-info" asp-action="Details" asp-route-id="@item.Id">Detay</a>
+                <a class="btn btn-sm btn-warning" asp-action="Edit" asp-route-id="@item.Id">Düzenle</a>
+                <a class="btn btn-sm btn-danger" asp-action="Delete" asp-route-id="@item.Id">Sil</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+

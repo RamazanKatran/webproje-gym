@@ -315,7 +315,6 @@ namespace WebProjeGym.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Goal")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 

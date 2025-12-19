@@ -37,7 +37,7 @@ namespace WebProjeGym.Data.Migrations
                     ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     HeightCm = table.Column<int>(type: "int", nullable: true),
                     WeightKg = table.Column<float>(type: "real", nullable: true),
-                    Goal = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
+                    Goal = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -59,7 +59,7 @@ namespace WebProjeGym.Data.Migrations
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     DurationMinutes = table.Column<int>(type: "int", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     GymBranchId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -81,8 +81,8 @@ namespace WebProjeGym.Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Specialization = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Bio = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Specialization = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    Bio = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     GymBranchId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

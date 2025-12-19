@@ -1,0 +1,25 @@
+@model WebProjeGym.Models.TrainerAvailability
+
+@{
+    ViewData["Title"] = "Müsaitlik Sil";
+}
+
+<h1 class="mt-3">Müsaitlik Saati Sil</h1>
+
+<h3>Bu müsaitlik saatini silmek istediğinizden emin misiniz?</h3>
+<div class="card mt-3">
+    <div class="card-body">
+        <p class="card-text">
+            <strong>Antrenör:</strong> @(Model.Trainer != null ? $"{Model.Trainer.FirstName} {Model.Trainer.LastName}" : "")<br />
+            <strong>Gün:</strong> @DayOfWeekHelper.GetTurkishName(Model.DayOfWeek)<br />
+            <strong>Saat:</strong> @Model.StartTime.ToString(@"hh\:mm") - @Model.EndTime.ToString(@"hh\:mm")
+        </p>
+    </div>
+</div>
+
+<form asp-action="Delete" method="post" class="mt-3">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Sil</button>
+    <a asp-action="Index" asp-route-trainerId="@Model.TrainerId" class="btn btn-secondary">İptal</a>
+</form>
+

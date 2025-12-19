@@ -1,0 +1,44 @@
+@model WebProjeGym.Models.Trainer
+
+@{
+    ViewData["Title"] = "Hizmet Yönetimi";
+    var allServices = ViewBag.AllServices as List<WebProjeGym.Models.Service>;
+    var trainerServices = ViewBag.TrainerServices as List<int> ?? new List<int>();
+}
+
+<h1 class="mt-3">Hizmet Yönetimi</h1>
+<p class="text-muted">Antrenör: <strong>@Model.FirstName @Model.LastName</strong></p>
+
+<form asp-action="ManageServices" method="post" class="mt-3">
+    <input type="hidden" asp-for="Id" />
+    
+    <div class="mb-3">
+        <label class="form-label">Verdiği Hizmetler (Birden fazla seçebilirsiniz):</label>
+        <div class="border p-3" style="max-height: 400px; overflow-y: auto;">
+            @if (allServices != null && allServices.Any())
+            {
+                @foreach (var service in allServices)
+                {
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" 
+                               name="selectedServices" 
+                               value="@service.Id" 
+                               id="service_@service.Id"
+                               @(trainerServices.Contains(service.Id) ? "checked" : "") />
+                        <label class="form-check-label" for="service_@service.Id">
+                            <strong>@service.Name</strong> - @service.DurationMinutes dk - @service.Price.ToString("C")
+                        </label>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-muted">Bu salonda henüz hizmet tanımlanmamış.</p>
+            }
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">İptal</a>
+</form>
+

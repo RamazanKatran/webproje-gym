@@ -1,0 +1,48 @@
+@model IEnumerable<WebProjeGym.Models.TrainerAvailability>
+
+@{
+    ViewData["Title"] = "Müsaitlik Saatleri";
+}
+
+<h1 class="mt-3">Müsaitlik Saatleri</h1>
+
+@if (ViewBag.TrainerName != null)
+{
+    <p class="text-muted">Antrenör: <strong>@ViewBag.TrainerName</strong></p>
+}
+
+<p>
+    <a class="btn btn-primary" asp-action="Create" asp-route-trainerId="@ViewBag.TrainerId">Yeni Müsaitlik Ekle</a>
+    @if (ViewBag.TrainerId != null)
+    {
+        <a class="btn btn-secondary" asp-controller="Trainers" asp-action="Details" asp-route-id="@ViewBag.TrainerId">Antrenöre Dön</a>
+    }
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Antrenör</th>
+            <th>Gün</th>
+            <th>Başlangıç</th>
+            <th>Bitiş</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model)
+{
+        <tr>
+            <td>@(item.Trainer != null ? $"{item.Trainer.FirstName} {item.Trainer.LastName}" : "")</td>
+            <td>@DayOfWeekHelper.GetTurkishName(item.DayOfWeek)</td>
+            <td>@item.StartTime.ToString(@"hh\:mm")</td>
+            <td>@item.EndTime.ToString(@"hh\:mm")</td>
+            <td>
+                <a class="btn btn-sm btn-warning" asp-action="Edit" asp-route-id="@item.Id">Düzenle</a>
+                <a class="btn btn-sm btn-danger" asp-action="Delete" asp-route-id="@item.Id">Sil</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+

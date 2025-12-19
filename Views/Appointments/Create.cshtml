@@ -1,0 +1,205 @@
+@model WebProjeGym.Models.Appointment
+
+@{
+    ViewData["Title"] = "Yeni Randevu";
+}
+
+<h1 class="mt-3">Yeni Randevu Al</h1>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<form asp-action="Create" method="post" class="mt-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="TrainerId" class="form-label">Antrenör</label>
+        <select asp-for="TrainerId" class="form-select" id="trainerSelect" asp-items="@(ViewData["TrainerId"] as SelectList)">
+            <option value="">Antrenör Seçin</option>
+        </select>
+        <span asp-validation-for="TrainerId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ServiceId" class="form-label">Hizmet</label>
+        <select asp-for="ServiceId" class="form-select" id="serviceSelect" asp-items="@(ViewData["ServiceId"] as SelectList)">
+            <option value="">Önce antrenör seçin</option>
+        </select>
+        <span asp-validation-for="ServiceId" class="text-danger"></span>
+        <small class="form-text text-muted" id="serviceInfo"></small>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="AppointmentDate" class="form-label"></label>
+            <input asp-for="AppointmentDate" type="date" class="form-control" id="dateSelect" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            <span asp-validation-for="AppointmentDate" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="AppointmentTime" class="form-label"></label>
+            <input asp-for="AppointmentTime" type="time" class="form-control" id="timeSelect" />
+            <span asp-validation-for="AppointmentTime" class="text-danger"></span>
+            <div id="availabilityInfo" class="mt-2"></div>
+            <div id="availableTimeSlots" class="mt-2"></div>
+        </div>
+    </div>
+
+    <div class="alert alert-info" id="gymHoursInfo" style="display:none;">
+        <small><strong>Salon Çalışma Saatleri:</strong> <span id="gymHoursText"></span></small>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Randevu Al</button>
+    <a asp-action="Index" class="btn btn-secondary">İptal</a>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        let selectedDate = '';
+        let selectedTime = '';
+
+        // Antrenör değiştiğinde hizmetleri yükle
+        document.getElementById('trainerSelect').addEventListener('change', function() {
+            loadServices(this.value);
+            if (selectedDate) {
+                loadAvailabilities(this.value, selectedDate);
+            }
+        });
+
+        // Tarih değiştiğinde müsaitlik saatlerini yükle
+        document.getElementById('dateSelect').addEventListener('change', function() {
+            selectedDate = this.value;
+            const trainerId = document.getElementById('trainerSelect').value;
+            if (trainerId && selectedDate) {
+                loadAvailabilities(trainerId, selectedDate);
+            }
+        });
+
+        function loadServices(trainerId) {
+            if (!trainerId) {
+                document.getElementById('serviceSelect').innerHTML = '<option value="">Önce antrenör seçin</option>';
+                document.getElementById('serviceInfo').textContent = '';
+                return;
+            }
+
+            fetch(`/Appointments/GetServicesByTrainer?trainerId=${trainerId}`)
+                .then(response => response.json())
+                .then(services => {
+                    const select = document.getElementById('serviceSelect');
+                    if (services.length === 0) {
+                        select.innerHTML = '<option value="">Bu antrenörün verdiği hizmet bulunmamaktadır</option>';
+                        document.getElementById('serviceInfo').textContent = '';
+                        return;
+                    }
+
+                    let html = '<option value="">Hizmet Seçin</option>';
+                    services.forEach(service => {
+                        html += `<option value="${service.id}" data-duration="${service.durationMinutes}" data-price="${service.price}">${service.name} - ${service.durationMinutes} dk - ${service.price} ₺</option>`;
+                    });
+                    select.innerHTML = html;
+                    document.getElementById('serviceInfo').textContent = '';
+                });
+        }
+
+        function loadAvailabilities(trainerId, date) {
+            if (!trainerId || !date) {
+                document.getElementById('availabilityInfo').textContent = '';
+                document.getElementById('gymHoursInfo').style.display = 'none';
+                return;
+            }
+
+            fetch(`/Appointments/GetTrainerAvailabilities?trainerId=${trainerId}&selectedDate=${date}`)
+                .then(response => response.json())
+                .then(data => {
+                    const availabilityInfo = document.getElementById('availabilityInfo');
+                    const gymHoursInfo = document.getElementById('gymHoursInfo');
+                    const gymHoursText = document.getElementById('gymHoursText');
+
+                    if (data.gymBranchHours && data.gymBranchHours.openingTime && data.gymBranchHours.closingTime) {
+                        gymHoursText.textContent = `${data.gymBranchHours.openingTime} - ${data.gymBranchHours.closingTime}`;
+                        gymHoursInfo.style.display = 'block';
+                    } else {
+                        gymHoursInfo.style.display = 'none';
+                    }
+
+                    const timeSlotsContainer = document.getElementById('availableTimeSlots');
+                    timeSlotsContainer.innerHTML = '';
+
+                    // Seçilen tarihin gününü göster
+                    const selectedDateObj = new Date(date);
+                    const dayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+                    const dayName = dayNames[selectedDateObj.getDay()];
+                    
+                    if (data.availabilities && data.availabilities.length > 0) {
+                        availabilityInfo.innerHTML = `<small class="text-success"><strong>${dayName} günü için müsait saatler:</strong></small>`;
+                        availabilityInfo.className = 'form-text text-success';
+                        
+                        // Her müsaitlik aralığı için saat seçenekleri oluştur
+                        data.availabilities.forEach(avail => {
+                            const startTime = avail.startTime;
+                            const endTime = avail.endTime;
+                            
+                            // Saat aralığını 30 dakikalık slotlara böl
+                            const slots = generateTimeSlots(startTime, endTime, 30);
+                            
+                            slots.forEach(slot => {
+                                const btn = document.createElement('button');
+                                btn.type = 'button';
+                                btn.className = 'btn btn-sm btn-outline-primary me-1 mb-1';
+                                btn.textContent = slot;
+                                btn.onclick = function() {
+                                    document.getElementById('timeSelect').value = slot;
+                                    // Seçili butonu vurgula
+                                    document.querySelectorAll('#availableTimeSlots button').forEach(b => {
+                                        b.classList.remove('btn-primary');
+                                        b.classList.add('btn-outline-primary');
+                                    });
+                                    this.classList.remove('btn-outline-primary');
+                                    this.classList.add('btn-primary');
+                                };
+                                timeSlotsContainer.appendChild(btn);
+                            });
+                        });
+                    } else {
+                        availabilityInfo.innerHTML = `<small class="text-danger"><strong>${dayName} günü</strong> için müsaitlik saati bulunmamaktadır. Lütfen başka bir gün seçin veya antrenörün bu gün için müsaitlik saatini eklemesini isteyin.</small>`;
+                        availabilityInfo.className = 'form-text text-danger';
+                    }
+                });
+        }
+
+        // Saat aralığını belirli dakika aralıklarına böl
+        function generateTimeSlots(startTime, endTime, intervalMinutes) {
+            const slots = [];
+            const start = parseTime(startTime);
+            const end = parseTime(endTime);
+            
+            let current = new Date(start);
+            const endDate = new Date(end);
+            
+            while (current < endDate) {
+                const hours = current.getHours().toString().padStart(2, '0');
+                const minutes = current.getMinutes().toString().padStart(2, '0');
+                slots.push(`${hours}:${minutes}`);
+                
+                current.setMinutes(current.getMinutes() + intervalMinutes);
+            }
+            
+            return slots;
+        }
+
+        // "HH:MM" formatındaki string'i Date'e çevir
+        function parseTime(timeString) {
+            const [hours, minutes] = timeString.split(':').map(Number);
+            const date = new Date();
+            date.setHours(hours, minutes, 0, 0);
+            return date;
+        }
+
+    </script>
+}
+

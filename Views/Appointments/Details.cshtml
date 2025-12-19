@@ -1,0 +1,44 @@
+@model WebProjeGym.Models.Appointment
+
+@{
+    ViewData["Title"] = "Randevu Detayı";
+}
+
+<h1 class="mt-3">Randevu Detayı</h1>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <h5 class="card-title">Randevu Bilgileri</h5>
+        <p class="card-text">
+            <strong>Antrenör:</strong> @(Model.Trainer != null ? $"{Model.Trainer.FirstName} {Model.Trainer.LastName}" : "")<br />
+            <strong>Salon:</strong> @Model.Trainer?.GymBranch?.Name<br />
+            <strong>Hizmet:</strong> @Model.Service?.Name<br />
+            <strong>Tarih:</strong> @Model.StartDateTime.ToString("dd.MM.yyyy")<br />
+            <strong>Saat:</strong> @Model.StartDateTime.ToString("HH:mm") - @Model.EndDateTime.ToString("HH:mm")<br />
+            <strong>Süre:</strong> @Model.DurationMinutes dakika<br />
+            <strong>Fiyat:</strong> @Model.Price.ToString("C")<br />
+            <strong>Durum:</strong> 
+            @if (Model.Status == WebProjeGym.Models.AppointmentStatus.Pending)
+            {
+                <span class="badge bg-warning">Beklemede</span>
+            }
+            else if (Model.Status == WebProjeGym.Models.AppointmentStatus.Approved)
+            {
+                <span class="badge bg-success">Onaylandı</span>
+            }
+            else
+            {
+                <span class="badge bg-danger">İptal Edildi</span>
+            }
+        </p>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-secondary">Listeye Dön</a>
+    @if (Model.Status == WebProjeGym.Models.AppointmentStatus.Pending)
+    {
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">İptal Et</a>
+    }
+</div>
+

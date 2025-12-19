@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebProjeGym.Models
 {
@@ -39,6 +40,15 @@ namespace WebProjeGym.Models
 
         // Hesaplanmış özellik - veritabanına map edilmez
         public DateTime EndDateTime => StartDateTime.AddMinutes(DurationMinutes);
+
+        // View için yardımcı property'ler - veritabanına map edilmez
+        [NotMapped]
+        [Display(Name = "Tarih")]
+        public DateTime? AppointmentDate { get; set; }
+
+        [NotMapped]
+        [Display(Name = "Saat")]
+        public TimeSpan? AppointmentTime { get; set; }
     }
 }
 

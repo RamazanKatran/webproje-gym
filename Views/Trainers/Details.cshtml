@@ -1,0 +1,63 @@
+@model WebProjeGym.Models.Trainer
+
+@{
+    ViewData["Title"] = "Antrenör Detayı";
+}
+
+<h1 class="mt-3">Antrenör Detayı</h1>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <h4 class="card-title">@Model.FirstName @Model.LastName</h4>
+        <p class="card-text">
+            <strong>Salon:</strong> @Model.GymBranch?.Name<br />
+            <strong>Uzmanlık:</strong> @Model.Specialization
+        </p>
+        <p class="card-text">
+            <strong>Biyografi:</strong><br />
+            @Model.Bio
+        </p>
+        
+        <div class="card-text">
+            <strong>Verdiği Hizmetler:</strong>
+            <a asp-controller="Trainers" asp-action="ManageServices" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary ms-2">Yönet</a>
+            @if (Model.TrainerServices != null && Model.TrainerServices.Any())
+            {
+                <br />
+                @foreach (var ts in Model.TrainerServices)
+                {
+                    <span class="badge bg-primary me-1">@ts.Service?.Name</span>
+                }
+            }
+            else
+            {
+                <br /><span class="text-muted">Henüz hizmet atanmamış</span>
+            }
+        </div>
+
+        <div class="card-text mt-2">
+            <strong>Müsaitlik Saatleri:</strong>
+            <a asp-controller="TrainerAvailabilities" asp-action="Index" asp-route-trainerId="@Model.Id" class="btn btn-sm btn-outline-success ms-2">Yönet</a>
+            @if (Model.TrainerAvailabilities != null && Model.TrainerAvailabilities.Any())
+            {
+                <br />
+                @foreach (var avail in Model.TrainerAvailabilities.OrderBy(a => a.DayOfWeek))
+                {
+                    <span class="badge bg-success me-1">
+                        @DayOfWeekHelper.GetTurkishName(avail.DayOfWeek): @avail.StartTime.ToString(@"hh\:mm") - @avail.EndTime.ToString(@"hh\:mm")
+                    </span>
+                }
+            }
+            else
+            {
+                <br /><span class="text-muted">Henüz müsaitlik saati tanımlanmamış</span>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Düzenle</a>
+    <a asp-action="Index" class="btn btn-secondary">Listeye Dön</a>
+</div>
+

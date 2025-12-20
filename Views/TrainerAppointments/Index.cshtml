@@ -1,0 +1,113 @@
+@model IEnumerable<WebProjeGym.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Randevularım";
+}
+
+<div class="index-header">
+    <h1><i class="bi bi-calendar-check"></i> Randevularım</h1>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill"></i> <strong>@TempData["SuccessMessage"]</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> <strong>@TempData["ErrorMessage"]</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Henüz randevunuz bulunmamaktadır.
+    </div>
+}
+else
+{
+    <div class="card table-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-person"></i> Üye</th>
+                            <th><i class="bi bi-list-ul"></i> Hizmet</th>
+                            <th><i class="bi bi-calendar"></i> Tarih</th>
+                            <th><i class="bi bi-clock"></i> Saat</th>
+                            <th><i class="bi bi-hourglass"></i> Süre</th>
+                            <th><i class="bi bi-currency-dollar"></i> Fiyat</th>
+                            <th><i class="bi bi-info-circle"></i> Durum</th>
+                            <th class="text-end"><i class="bi bi-gear"></i> İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><strong>@(item.MemberProfile?.FullName ?? item.MemberProfile?.ApplicationUser?.Email ?? "Bilinmiyor")</strong></td>
+                                <td>@item.Service?.Name</td>
+                                <td>@item.StartDateTime.ToString("dd.MM.yyyy")</td>
+                                <td>@item.StartDateTime.ToString("HH:mm") - @item.EndDateTime.ToString("HH:mm")</td>
+                                <td><span class="badge bg-info">@item.DurationMinutes dk</span></td>
+                                <td><strong class="text-success">@item.Price.ToString("N2") ₺</strong></td>
+                                <td>
+                                    @if (item.Status == WebProjeGym.Models.AppointmentStatus.Pending)
+                                    {
+                                        <span class="badge bg-warning">Beklemede</span>
+                                    }
+                                    else if (item.Status == WebProjeGym.Models.AppointmentStatus.Approved)
+                                    {
+                                        <span class="badge bg-success">Onaylandı</span>
+                                    }
+                                    else if (item.Status == WebProjeGym.Models.AppointmentStatus.Rejected)
+                                    {
+                                        <span class="badge bg-danger">Reddedildi</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">İptal Edildi</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="table-actions">
+                                        <a class="btn btn-sm btn-info" asp-action="Details" asp-route-id="@item.Id">
+                                            <i class="bi bi-eye"></i> Detay
+                                        </a>
+                                        @if (item.Status == WebProjeGym.Models.AppointmentStatus.Pending)
+                                        {
+                                            <form asp-action="Approve" method="post" style="display:inline;">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    <i class="bi bi-check-circle"></i> Onayla
+                                                </button>
+                                            </form>
+                                            <form asp-action="Reject" method="post" style="display:inline;">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bu randevuyu reddetmek istediğinizden emin misiniz?');">
+                                                    <i class="bi bi-x-circle"></i> Reddet
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+<div style="height: 100px;"></div>
+

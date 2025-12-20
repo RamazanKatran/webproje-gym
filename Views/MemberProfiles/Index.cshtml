@@ -4,49 +4,75 @@
     ViewData["Title"] = "Profilim";
 }
 
-<h1 class="mt-3">Profilim</h1>
+<div class="page-header">
+    <h1><i class="bi bi-person-circle"></i> Profilim</h1>
+</div>
 
 @if (TempData["SuccessMessage"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["SuccessMessage"]
+        <i class="bi bi-check-circle-fill"></i> <strong>@TempData["SuccessMessage"]</strong>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 
-<div class="card mt-3">
-    <div class="card-body">
-        <h5 class="card-title">Kişisel Bilgiler</h5>
-        <p class="card-text">
-            <strong>E-posta:</strong> @Model.ApplicationUser?.Email<br />
-            @if (Model.HeightCm.HasValue)
-            {
-                <text><strong>Boy:</strong> @Model.HeightCm cm<br /></text>
-            }
-            @if (Model.WeightKg.HasValue)
-            {
-                <text><strong>Kilo:</strong> @Model.WeightKg kg<br /></text>
-            }
-            @if (!string.IsNullOrEmpty(Model.Goal))
-            {
-                <strong>Hedef:</strong> @Model.Goal<br />
-            }
-        </p>
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Profili Düzenle</a>
+<div class="form-card">
+    <h5 class="mb-4"><i class="bi bi-person"></i> Kişisel Bilgiler</h5>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <strong><i class="bi bi-person"></i> Ad Soyad:</strong>
+            <p class="text-muted">@(Model.FullName ?? "Belirtilmemiş")</p>
+        </div>
+        <div class="col-md-6">
+            <strong><i class="bi bi-envelope"></i> E-posta:</strong>
+            <p class="text-muted">@Model.ApplicationUser?.Email</p>
+        </div>
+    </div>
+    <div class="row mb-3">
+        @if (Model.HeightCm.HasValue)
+        {
+            <div class="col-md-4">
+                <strong><i class="bi bi-rulers"></i> Boy:</strong>
+                <p class="text-muted">@Model.HeightCm cm</p>
+            </div>
+        }
+        @if (Model.WeightKg.HasValue)
+        {
+            <div class="col-md-4">
+                <strong><i class="bi bi-speedometer"></i> Kilo:</strong>
+                <p class="text-muted">@Model.WeightKg kg</p>
+            </div>
+        }
+    </div>
+    @if (!string.IsNullOrEmpty(Model.Goal))
+    {
+        <div class="mb-3">
+            <strong><i class="bi bi-bullseye"></i> Hedef:</strong>
+            <p class="text-muted">@Model.Goal</p>
+        </div>
+    }
+    <div class="form-actions">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Profili Düzenle
+        </a>
     </div>
 </div>
 
 @if (!Model.HeightCm.HasValue || !Model.WeightKg.HasValue || string.IsNullOrEmpty(Model.Goal))
 {
-    <div class="alert alert-warning mt-3">
-        <strong>Bilgilendirme:</strong> Profil bilgilerinizi tamamlamanız randevu alabilmeniz için gereklidir.
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> <strong>Bilgilendirme:</strong> Profil bilgilerinizi tamamlamanız randevu alabilmeniz için gereklidir.
     </div>
 }
 else
 {
-    <div class="alert alert-success mt-3">
-        <strong>Harika!</strong> Profil bilgileriniz tamamlandı. Artık randevu alabilirsiniz.
-        <a asp-controller="Appointments" asp-action="Create" class="btn btn-success btn-sm ms-2">Randevu Al</a>
+    <div class="alert alert-success">
+        <i class="bi bi-check-circle"></i> <strong>Harika!</strong> Profil bilgileriniz tamamlandı. Artık randevu alabilirsiniz.
+        <a asp-controller="Appointments" asp-action="Create" class="btn btn-success btn-sm ms-2">
+            <i class="bi bi-calendar-plus"></i> Randevu Al
+        </a>
     </div>
 }
+
+<div style="height: 100px;"></div>
 

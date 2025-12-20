@@ -66,12 +66,18 @@ namespace WebProjeGym.Controllers
             if (ModelState.IsValid)
             {
                 // #region agent log
-                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "service-create", hypothesisId = "S2", location = "ServicesController.Create", message = "ModelState valid, saving", data = new { }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "service-create", hypothesisId = "S2", location = "ServicesController.Create", message = "ModelState valid, saving", data = new { serviceId = service.Id, name = service.Name, gymBranchId = service.GymBranchId, databaseName = _context.Database.GetDbConnection().Database }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
                 // #endregion
                 _context.Add(service);
-                await _context.SaveChangesAsync();
+                
                 // #region agent log
-                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "service-create", hypothesisId = "S2", location = "ServicesController.Create", message = "Service saved", data = new { id = service.Id }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "service-create", hypothesisId = "S2", location = "ServicesController.Create:74", message = "Before SaveChangesAsync", data = new { serviceId = service.Id }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
+                
+                var rowsAffected = await _context.SaveChangesAsync();
+                
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "service-create", hypothesisId = "S2", location = "ServicesController.Create:79", message = "SaveChangesAsync completed", data = new { rowsAffected = rowsAffected, serviceId = service.Id, databaseName = _context.Database.GetDbConnection().Database }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
                 // #endregion
                 return RedirectToAction(nameof(Index));
             }
@@ -160,6 +166,27 @@ namespace WebProjeGym.Controllers
             var service = await _context.Services.FindAsync(id);
             if (service != null)
             {
+                // Hizmetin randevularını manuel olarak sil
+                var appointments = await _context.Appointments
+                    .Where(a => a.ServiceId == id)
+                    .ToListAsync();
+                
+                if (appointments.Any())
+                {
+                    _context.Appointments.RemoveRange(appointments);
+                }
+                
+                // Hizmetin TrainerService ilişkilerini manuel olarak sil
+                var trainerServices = await _context.TrainerServices
+                    .Where(ts => ts.ServiceId == id)
+                    .ToListAsync();
+                
+                if (trainerServices.Any())
+                {
+                    _context.TrainerServices.RemoveRange(trainerServices);
+                }
+                
+                // Hizmeti sil
                 _context.Services.Remove(service);
                 await _context.SaveChangesAsync();
             }

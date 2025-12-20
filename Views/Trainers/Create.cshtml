@@ -4,67 +4,114 @@
     ViewData["Title"] = "Yeni Antrenör";
 }
 
-<h1 class="mt-3">Yeni Antrenör</h1>
+<div class="page-header">
+    <h1><i class="bi bi-person-plus"></i> Yeni Antrenör</h1>
+</div>
 
-<form asp-action="Create" method="post" class="mt-3">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="form-card">
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewData.ModelState.IsValid ? "display:none;" : "")"></div>
 
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label asp-for="FirstName" class="form-label"></label>
-            <input asp-for="FirstName" class="form-control" />
-            <span asp-validation-for="FirstName" class="text-danger"></span>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="FirstName" class="form-label">
+                    <i class="bi bi-person"></i> Ad <span class="text-danger">*</span>
+                </label>
+                <input asp-for="FirstName" class="form-control" placeholder="Antrenör adını girin" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="LastName" class="form-label">
+                    <i class="bi bi-person"></i> Soyad <span class="text-danger">*</span>
+                </label>
+                <input asp-for="LastName" class="form-control" placeholder="Antrenör soyadını girin" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
         </div>
-        <div class="col-md-6 mb-3">
-            <label asp-for="LastName" class="form-label"></label>
-            <input asp-for="LastName" class="form-control" />
-            <span asp-validation-for="LastName" class="text-danger"></span>
+
+        <div class="mb-3">
+            <label asp-for="GymBranchId" class="form-label">
+                <i class="bi bi-building"></i> Salon <span class="text-danger">*</span>
+            </label>
+            <select asp-for="GymBranchId" class="form-select" asp-items="ViewBag.GymBranchId" id="GymBranchId">
+                <option value="">Salon Seçin</option>
+            </select>
+            <span asp-validation-for="GymBranchId" class="text-danger"></span>
         </div>
-    </div>
 
-    <div class="mb-3">
-        <label asp-for="GymBranchId" class="form-label"></label>
-        <select asp-for="GymBranchId" class="form-select" asp-items="ViewBag.GymBranchId"></select>
-        <span asp-validation-for="GymBranchId" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Specialization" class="form-label"></label>
-        <input asp-for="Specialization" class="form-control" placeholder="Örn: Kilo verme, Kas geliştirme, Yoga" />
-        <span asp-validation-for="Specialization" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Bio" class="form-label"></label>
-        <textarea asp-for="Bio" class="form-control" rows="4"></textarea>
-        <span asp-validation-for="Bio" class="text-danger"></span>
-    </div>
-
-    <hr class="my-4" />
-    <h5>Verdiği Hizmetler</h5>
-    <div class="mb-3 border p-3" id="servicesContainer" style="max-height: 200px; overflow-y: auto;">
-        <p class="text-muted">Önce salon seçin, ardından hizmetler görünecektir.</p>
-    </div>
-
-    <hr class="my-4" />
-    <div class="mb-3">
-        <h5>Müsaitlik Saatleri</h5>
-        <div id="gymHoursInfo" class="alert alert-info" style="display:none;">
-            <small><strong>Salon Çalışma Saatleri:</strong> <span id="gymHoursText"></span></small>
+        <div class="mb-3">
+            <label asp-for="Specialization" class="form-label">
+                <i class="bi bi-star"></i> Uzmanlık
+            </label>
+            <input asp-for="Specialization" class="form-control" placeholder="Örn: Kilo verme, Kas geliştirme, Yoga" />
+            <span asp-validation-for="Specialization" class="text-danger"></span>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-primary mb-2" onclick="addAvailability()">+ Müsaitlik Ekle</button>
-        <div id="availabilitiesContainer"></div>
-    </div>
 
-    <button type="submit" class="btn btn-primary" onclick="return validateForm()">Kaydet</button>
-    <a asp-action="Index" class="btn btn-secondary">Listeye Dön</a>
-</form>
+        <div class="mb-3">
+            <label asp-for="Bio" class="form-label">
+                <i class="bi bi-card-text"></i> Biyografi
+            </label>
+            <textarea asp-for="Bio" class="form-control" rows="4" placeholder="Antrenör hakkında bilgi"></textarea>
+            <span asp-validation-for="Bio" class="text-danger"></span>
+        </div>
+
+        <hr class="my-4" />
+        <h5 class="mb-3"><i class="bi bi-key"></i> Giriş Bilgileri</h5>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="email" class="form-label">
+                    <i class="bi bi-envelope"></i> E-posta <span class="text-danger">*</span>
+                </label>
+                <input type="email" name="email" id="email" class="form-control" required placeholder="antrenor@example.com" />
+                <small class="form-text text-muted">Antrenör bu e-posta ile sisteme giriş yapacak.</small>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="password" class="form-label">
+                    <i class="bi bi-lock"></i> Şifre <span class="text-danger">*</span>
+                </label>
+                <input type="password" name="password" id="password" class="form-control" required minlength="6" placeholder="En az 6 karakter" />
+                <small class="form-text text-muted">En az 6 karakter olmalıdır.</small>
+            </div>
+        </div>
+
+        <hr class="my-4" />
+        <h5 class="mb-3"><i class="bi bi-list-ul"></i> Verdiği Hizmetler</h5>
+        <div class="mb-3 border rounded p-3 bg-light" id="servicesContainer" style="max-height: 200px; overflow-y: auto;">
+            <p class="text-muted mb-0">Önce salon seçin, ardından hizmetler görünecektir.</p>
+        </div>
+
+        <hr class="my-4" />
+        <div class="mb-3">
+            <h5 class="mb-3"><i class="bi bi-clock"></i> Müsaitlik Saatleri</h5>
+            <div id="gymHoursInfo" class="alert alert-info mb-3" style="display:none;">
+                <i class="bi bi-info-circle"></i> <strong>Salon Çalışma Saatleri:</strong> <span id="gymHoursText"></span>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary mb-3" onclick="addAvailability()">
+                <i class="bi bi-plus-circle"></i> Müsaitlik Ekle
+            </button>
+            <div id="availabilitiesContainer"></div>
+        </div>
+
+        <div class="form-actions" style="display: flex !important; visibility: visible !important; opacity: 1 !important; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #e5e7eb;">
+            <button type="submit" class="btn btn-primary" onclick="return validateForm()" style="display: inline-flex !important; visibility: visible !important; opacity: 1 !important;">
+                <i class="bi bi-check-circle"></i> Kaydet
+            </button>
+            <a asp-action="Index" class="btn btn-secondary" style="display: inline-flex !important; visibility: visible !important; opacity: 1 !important;">
+                <i class="bi bi-arrow-left"></i> Listeye Dön
+            </a>
+        </div>
+    </form>
+</div>
+
+<div style="height: 100px;"></div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         let availabilityIndex = 0;
         let gymBranchHours = { openingTime: "", closingTime: "" };
+        let selectedServiceDurations = []; // Seçilen hizmetlerin süreleri
+        
         const dayOfWeekOptions = [
             { value: 0, text: "Pazar" },
             { value: 1, text: "Pazartesi" },
@@ -75,23 +122,37 @@
             { value: 6, text: "Cumartesi" }
         ];
 
-        // Salon değiştiğinde hizmetleri ve saatleri yükle
-        document.getElementById('GymBranchId').addEventListener('change', function() {
-            loadServices(this.value);
-            loadGymBranchHours(this.value);
+        // Hizmet seçimi değiştiğinde zaman aralıklarını güncelle
+        document.addEventListener('change', function(e) {
+            if (e.target.type === 'checkbox' && e.target.name === 'selectedServices') {
+                updateServiceDurations();
+                updateAllTimeSlots();
+            }
         });
 
         function loadServices(gymBranchId) {
+            console.log('loadServices çağrıldı, gymBranchId:', gymBranchId);
+            
             if (!gymBranchId) {
                 document.getElementById('servicesContainer').innerHTML = '<p class="text-muted">Önce salon seçin.</p>';
                 return;
             }
 
+            // Loading mesajı göster
+            document.getElementById('servicesContainer').innerHTML = '<p class="text-muted"><i class="bi bi-hourglass-split"></i> Hizmetler yükleniyor...</p>';
+
             fetch(`/Trainers/GetServicesByGymBranch?gymBranchId=${gymBranchId}`)
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: Hizmetler yüklenirken hata oluştu`);
+                    }
+                    return response.json();
+                })
                 .then(services => {
+                    console.log('Hizmetler alındı:', services);
                     const container = document.getElementById('servicesContainer');
-                    if (services.length === 0) {
+                    if (!services || services.length === 0) {
                         container.innerHTML = '<p class="text-muted">Bu salonda henüz hizmet tanımlanmamış.</p>';
                         return;
                     }
@@ -100,7 +161,7 @@
                     services.forEach(service => {
                         html += `
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="selectedServices" value="${service.id}" id="service_${service.id}" />
+                                <input class="form-check-input" type="checkbox" name="selectedServices" value="${service.id}" id="service_${service.id}" data-duration="${service.durationMinutes}" onchange="updateServiceDurations(); updateAllTimeSlots();" />
                                 <label class="form-check-label" for="service_${service.id}">
                                     <strong>${service.name}</strong> - ${service.durationMinutes} dk - ${service.price} ₺
                                 </label>
@@ -108,6 +169,12 @@
                         `;
                     });
                     container.innerHTML = html;
+                    updateServiceDurations();
+                    updateAllTimeSlots();
+                })
+                .catch(error => {
+                    console.error('Hizmet yükleme hatası:', error);
+                    document.getElementById('servicesContainer').innerHTML = `<p class="text-danger">Hizmetler yüklenirken bir hata oluştu: ${error.message}. Lütfen sayfayı yenileyin.</p>`;
                 });
         }
 
@@ -128,7 +195,124 @@
                     } else {
                         document.getElementById('gymHoursInfo').style.display = 'none';
                     }
+                    // Zaman aralıklarını güncelle
+                    updateAllTimeSlots();
                 });
+        }
+
+        function updateServiceDurations() {
+            selectedServiceDurations = [];
+            document.querySelectorAll('input[name="selectedServices"]:checked').forEach(checkbox => {
+                const duration = parseInt(checkbox.getAttribute('data-duration'));
+                if (duration && !selectedServiceDurations.includes(duration)) {
+                    selectedServiceDurations.push(duration);
+                }
+            });
+        }
+
+        function generateTimeSlots() {
+            if (!gymBranchHours.openingTime || !gymBranchHours.closingTime || selectedServiceDurations.length === 0) {
+                return [];
+            }
+
+            const opening = gymBranchHours.openingTime.substring(0, 5); // "08:00"
+            const closing = gymBranchHours.closingTime.substring(0, 5); // "22:00"
+            
+            const [openingHour, openingMin] = opening.split(':').map(Number);
+            const [closingHour, closingMin] = closing.split(':').map(Number);
+            
+            const openingMinutes = openingHour * 60 + openingMin;
+            const closingMinutes = closingHour * 60 + closingMin;
+            
+            // En küçük hizmet süresini kullan (en sık aralık)
+            const minDuration = Math.min(...selectedServiceDurations);
+            
+            const slots = [];
+            let currentMinutes = openingMinutes;
+            
+            while (currentMinutes < closingMinutes) {
+                const hours = Math.floor(currentMinutes / 60);
+                const minutes = currentMinutes % 60;
+                const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                
+                // Kapanış saatinden önce biten slotları ekle (hizmet süresi kadar yer olmalı)
+                // Örnek: 22:00'de kapanıyorsa, 21:00'de başlayan 60dk slot 22:00'de biter, bu yüzden 21:00 eklenmeli
+                const slotEndMinutes = currentMinutes + minDuration;
+                if (slotEndMinutes <= closingMinutes) {
+                    slots.push(timeString);
+                } else {
+                    // Bu slot kapanış saatinden sonra bitiyor, ekleme
+                    break;
+                }
+                
+                // Eğer 60 dakika ise saat başlarında, değilse hizmet süresine göre
+                if (minDuration === 60) {
+                    currentMinutes += 60; // Saat başları
+                } else {
+                    currentMinutes += minDuration; // Hizmet süresine göre (örn: 45 dk)
+                }
+            }
+            
+            return slots;
+        }
+
+        function updateTimeSlotOptions(selectElement, slots, selectedValue) {
+            selectElement.innerHTML = '<option value="">Seçin</option>';
+            slots.forEach(slot => {
+                const option = document.createElement('option');
+                option.value = slot;
+                option.textContent = slot;
+                if (selectedValue === slot) {
+                    option.selected = true;
+                }
+                selectElement.appendChild(option);
+            });
+        }
+
+        function updateAllTimeSlots() {
+            const slots = generateTimeSlots();
+            if (slots.length === 0) {
+                // Hizmet seçilmemiş veya salon saatleri yüklenmemiş
+                document.querySelectorAll('.availability-start, .availability-end').forEach(select => {
+                    if (select.tagName === 'SELECT') {
+                        select.innerHTML = '<option value="">Önce hizmet seçin</option>';
+                    }
+                });
+                return;
+            }
+            
+            document.querySelectorAll('.availability-start, .availability-end').forEach(select => {
+                if (select.tagName === 'SELECT') {
+                    const currentValue = select.value || '';
+                    updateTimeSlotOptions(select, slots, currentValue);
+                }
+            });
+        }
+
+        function updateEndTimeOptions(index) {
+            const row = document.querySelector(`.availability-row[data-index="${index}"]`);
+            if (!row) return;
+            
+            const startSelect = row.querySelector('.availability-start');
+            const endSelect = row.querySelector('.availability-end');
+            
+            if (!startSelect || !endSelect || !startSelect.value) {
+                endSelect.innerHTML = '<option value="">Bitiş Seçin</option>';
+                return;
+            }
+            
+            const slots = generateTimeSlots();
+            const startTime = startSelect.value;
+            const startIndex = slots.indexOf(startTime);
+            
+            if (startIndex === -1) {
+                endSelect.innerHTML = '<option value="">Bitiş Seçin</option>';
+                return;
+            }
+            
+            // Başlangıç saatinden sonraki slotları göster
+            const endSlots = slots.slice(startIndex + 1);
+            updateTimeSlotOptions(endSelect, endSlots, endSelect.value);
         }
 
         function validateAvailabilityTime(startTime, endTime) {
@@ -164,6 +348,18 @@
         }
 
         function addAvailability() {
+            // Hizmet seçilmiş mi kontrol et
+            if (selectedServiceDurations.length === 0) {
+                alert('Lütfen önce bir hizmet seçin. Müsaitlik saatleri seçilen hizmetin süresine göre oluşturulur.');
+                return;
+            }
+            
+            // Salon saatleri yüklenmiş mi kontrol et
+            if (!gymBranchHours.openingTime || !gymBranchHours.closingTime) {
+                alert('Lütfen önce salon seçin. Salon saatleri yüklendikten sonra müsaitlik ekleyebilirsiniz.');
+                return;
+            }
+            
             const container = document.getElementById('availabilitiesContainer');
             const index = availabilityIndex++;
             const html = `
@@ -175,11 +371,15 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <input type="time" name="availabilities[${index}].StartTime" class="form-control availability-start" onchange="validateAvailabilityRow(${index})" />
+                        <select name="availabilities[${index}].StartTime" class="form-select availability-start" onchange="validateAvailabilityRow(${index}); updateEndTimeOptions(${index});">
+                            <option value="">Başlangıç Seçin</option>
+                        </select>
                         <small class="text-danger availability-error-${index}" style="display:none;"></small>
                     </div>
                     <div class="col-md-3">
-                        <input type="time" name="availabilities[${index}].EndTime" class="form-control availability-end" onchange="validateAvailabilityRow(${index})" />
+                        <select name="availabilities[${index}].EndTime" class="form-select availability-end" onchange="validateAvailabilityRow(${index})">
+                            <option value="">Bitiş Seçin</option>
+                        </select>
                     </div>
                     <div class="col-md-3">
                         <button type="button" class="btn btn-sm btn-danger" onclick="removeAvailability(${index})">Sil</button>
@@ -187,6 +387,10 @@
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', html);
+            // Yeni eklenen row için zaman slotlarını güncelle
+            setTimeout(() => {
+                updateAllTimeSlots();
+            }, 100);
         }
 
         function validateAvailabilityRow(index) {
@@ -242,10 +446,27 @@
 
         // Sayfa yüklendiğinde salon seçiliyse hizmetleri ve saatleri yükle
         window.addEventListener('DOMContentLoaded', function() {
-            const gymBranchId = document.getElementById('GymBranchId').value;
-            if (gymBranchId) {
-                loadServices(gymBranchId);
-                loadGymBranchHours(gymBranchId);
+            console.log('Sayfa yüklendi, salon kontrolü yapılıyor...');
+            
+            // Salon değiştiğinde hizmetleri ve saatleri yükle
+            const gymBranchSelect = document.getElementById('GymBranchId');
+            if (gymBranchSelect) {
+                gymBranchSelect.addEventListener('change', function() {
+                    console.log('Salon değişti:', this.value);
+                    loadServices(this.value);
+                    loadGymBranchHours(this.value);
+                });
+                
+                // Başlangıçta salon seçiliyse yükle
+                if (gymBranchSelect.value) {
+                    console.log('Başlangıç salon ID:', gymBranchSelect.value);
+                    loadServices(gymBranchSelect.value);
+                    loadGymBranchHours(gymBranchSelect.value);
+                } else {
+                    console.log('Başlangıçta salon seçilmemiş');
+                }
+            } else {
+                console.error('GymBranchId select elementi bulunamadı!');
             }
         });
     </script>

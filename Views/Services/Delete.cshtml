@@ -4,25 +4,43 @@
     ViewData["Title"] = "Hizmet Sil";
 }
 
-<h1 class="mt-3">Hizmet Sil</h1>
-
-<h3>Bu hizmeti silmek istediğinize emin misiniz?</h3>
-
-<div class="card mt-3">
-    <div class="card-body">
-        <h4 class="card-title">@Model.Name</h4>
-        <p class="card-text">
-            <strong>Salon:</strong> @Model.GymBranch?.Name<br />
-            <strong>Süre:</strong> @Model.DurationMinutes dakika<br />
-            <strong>Ücret:</strong> @Model.Price.ToString("C")
-        </p>
-    </div>
+<div class="page-header">
+    <h1><i class="bi bi-trash"></i> Hizmet Sil</h1>
 </div>
 
-<form asp-action="Delete" method="post" class="mt-3">
-    <input type="hidden" asp-for="Id" />
-    <button type="submit" class="btn btn-danger">Sil</button>
-    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
-</form>
+<div class="form-card">
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> <strong>Uyarı:</strong> Bu hizmeti silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+    </div>
+
+    <h4 class="mb-4"><i class="bi bi-tag"></i> @Model.Name</h4>
+    
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <strong><i class="bi bi-building"></i> Salon:</strong>
+            <p class="text-muted">@(Model.GymBranch?.Name ?? "-")</p>
+        </div>
+        <div class="col-md-4">
+            <strong><i class="bi bi-clock"></i> Süre:</strong>
+            <p class="text-muted"><span class="badge bg-info">@Model.DurationMinutes dakika</span></p>
+        </div>
+        <div class="col-md-4">
+            <strong><i class="bi bi-currency-dollar"></i> Ücret:</strong>
+            <p class="text-muted"><strong class="text-success">@Model.Price.ToString("N2") ₺</strong></p>
+        </div>
+    </div>
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div class="form-actions">
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Sil
+            </button>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> Vazgeç
+            </a>
+        </div>
+    </form>
+</div>
 
 

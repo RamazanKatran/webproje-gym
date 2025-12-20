@@ -1,0 +1,28 @@
+@page
+@model PersonalDataModel
+@{
+    ViewData["Title"] = "Kişisel veriler";
+    ViewData["ActivePage"] = ManageNavPages.PersonalData;
+    Layout = "/Areas/Identity/Pages/Account/Manage/_ManageLayout.cshtml";
+}
+
+<h4>Kişisel veriler</h4>
+
+<div class="row">
+    <div class="col-md-6">
+        <p>Hesabınız bize verdiğiniz kişisel verileri içerir. Bu sayfa bu verileri indirmenize veya silmenize olanak tanır.</p>
+        <p>
+            <strong>Bu verileri silmek hesabınızı kalıcı olarak kaldırır ve bu işlem geri alınamaz.</strong>
+        </p>
+        <form id="download-data" asp-page="DownloadPersonalData" method="post" class="form-group">
+            <button class="btn btn-primary" type="submit">İndir</button>
+        </form>
+        <p>
+            <a id="delete" asp-page="DeletePersonalData" class="btn btn-danger">Sil</a>
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

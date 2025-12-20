@@ -159,6 +159,54 @@ namespace WebProjeGym.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("WebProjeGym.Models.AIRecommendation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Age")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("BodyType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Goal")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("HeightCm")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RecommendationType")
+                        .HasColumnType("int");
+
+                    b.Property<float>("WeightKg")
+                        .HasColumnType("real");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("AIRecommendations");
+                });
+
             modelBuilder.Entity("WebProjeGym.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -273,17 +321,14 @@ namespace WebProjeGym.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("ClosingTime")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -293,7 +338,6 @@ namespace WebProjeGym.Data.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("OpeningTime")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
@@ -314,12 +358,20 @@ namespace WebProjeGym.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("FirstName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Goal")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<int?>("HeightCm")
                         .HasColumnType("int");
+
+                    b.Property<string>("LastName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<float?>("WeightKg")
                         .HasColumnType("real");
@@ -341,7 +393,6 @@ namespace WebProjeGym.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -374,8 +425,10 @@ namespace WebProjeGym.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("Bio")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -393,11 +446,12 @@ namespace WebProjeGym.Data.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Specialization")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("GymBranchId");
 
@@ -497,24 +551,35 @@ namespace WebProjeGym.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("WebProjeGym.Models.AIRecommendation", b =>
+                {
+                    b.HasOne("WebProjeGym.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+                });
+
             modelBuilder.Entity("WebProjeGym.Models.Appointment", b =>
                 {
                     b.HasOne("WebProjeGym.Models.MemberProfile", "MemberProfile")
                         .WithMany()
                         .HasForeignKey("MemberProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("WebProjeGym.Models.Service", "Service")
                         .WithMany("Appointments")
                         .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("WebProjeGym.Models.Trainer", "Trainer")
                         .WithMany("Appointments")
                         .HasForeignKey("TrainerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("MemberProfile");
@@ -548,11 +613,18 @@ namespace WebProjeGym.Data.Migrations
 
             modelBuilder.Entity("WebProjeGym.Models.Trainer", b =>
                 {
+                    b.HasOne("WebProjeGym.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("WebProjeGym.Models.GymBranch", "GymBranch")
                         .WithMany("Trainers")
                         .HasForeignKey("GymBranchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ApplicationUser");
 
                     b.Navigation("GymBranch");
                 });
@@ -573,13 +645,13 @@ namespace WebProjeGym.Data.Migrations
                     b.HasOne("WebProjeGym.Models.Service", "Service")
                         .WithMany("TrainerServices")
                         .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("WebProjeGym.Models.Trainer", "Trainer")
                         .WithMany("TrainerServices")
                         .HasForeignKey("TrainerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Service");

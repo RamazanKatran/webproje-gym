@@ -34,6 +34,11 @@ namespace WebProjeGym.Models
         public int GymBranchId { get; set; }
         public GymBranch? GymBranch { get; set; }
 
+        // Identity entegrasyonu - Antrenörün ApplicationUser ile bağlantısı
+        [Display(Name = "E-posta")]
+        public string? ApplicationUserId { get; set; }
+        public ApplicationUser? ApplicationUser { get; set; }
+
         public ICollection<TrainerService> TrainerServices { get; set; } = new List<TrainerService>();
         public ICollection<TrainerAvailability> TrainerAvailabilities { get; set; } = new List<TrainerAvailability>();
         public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();

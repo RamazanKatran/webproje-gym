@@ -1,0 +1,29 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Hesap Ayarları";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+    Layout = "/Areas/Identity/Pages/Account/Manage/_ManageLayout.cshtml";
+}
+
+<h4>Profil</h4>
+<partial name="_StatusMessage" for="StatusMessage" />
+<div>
+        <form id="profile-form" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            <div class="form-floating mb-3">
+                <input asp-for="Username" class="form-control" placeholder="Kullanıcı adınızı seçin." disabled />
+                <label asp-for="Username" class="form-label">Kullanıcı Adı</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Telefon numaranızı giriniz." />
+                <label asp-for="Input.PhoneNumber" class="form-label">Telefon Numarası</label>
+                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+            </div>
+            <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Kaydet</button>
+        </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

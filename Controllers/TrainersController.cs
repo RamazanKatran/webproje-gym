@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,22 +12,53 @@ namespace WebProjeGym.Controllers
     public class TrainersController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public TrainersController(ApplicationDbContext context)
+        public TrainersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Trainers
         public async Task<IActionResult> Index()
         {
-            var trainers = _context.Trainers
-                .Include(t => t.GymBranch)
-                .Include(t => t.TrainerServices)
-                    .ThenInclude(ts => ts.Service)
-                .Include(t => t.TrainerAvailabilities)
-                .OrderBy(t => t.FirstName);
-            return View(await trainers.ToListAsync());
+            // #region agent log
+            try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H1", location = "TrainersController.Index:26", message = "Index method entry", data = new { }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+            // #endregion
+
+            // #region agent log
+            try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H1", location = "TrainersController.Index:28", message = "Before query execution", data = new { databaseName = _context.Database.GetDbConnection().Database }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+            // #endregion
+
+            try
+            {
+                var trainers = _context.Trainers
+                    .Include(t => t.GymBranch)
+                    .Include(t => t.TrainerServices)
+                        .ThenInclude(ts => ts.Service)
+                    .Include(t => t.TrainerAvailabilities)
+                    .OrderBy(t => t.FirstName);
+                
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H1", location = "TrainersController.Index:40", message = "Query built, before ToListAsync", data = new { }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
+
+                var result = await trainers.ToListAsync();
+                
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H1", location = "TrainersController.Index:46", message = "Query executed successfully", data = new { count = result.Count }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
+
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H1", location = "TrainersController.Index:52", message = "Exception caught", data = new { exceptionType = ex.GetType().Name, message = ex.Message, innerException = ex.InnerException?.Message }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
+                throw;
+            }
         }
 
         // GET: Trainers/Details/5
@@ -64,12 +96,67 @@ namespace WebProjeGym.Controllers
         // POST: Trainers/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Trainer trainer, int[] selectedServices, List<TrainerAvailabilityInput> availabilities)
+        public async Task<IActionResult> Create(Trainer trainer, string email, string password, int[] selectedServices, List<TrainerAvailabilityInput> availabilities)
         {
+            // Email ve şifre validasyonu
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ModelState.AddModelError("", "E-posta adresi zorunludur.");
+            }
+            else if (await _userManager.FindByEmailAsync(email) != null)
+            {
+                ModelState.AddModelError("", "Bu e-posta adresi zaten kullanılıyor.");
+            }
+
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 6)
+            {
+                ModelState.AddModelError("", "Şifre en az 6 karakter olmalıdır.");
+            }
+
             if (ModelState.IsValid)
             {
+                // Önce ApplicationUser oluştur
+                var trainerUser = new ApplicationUser
+                {
+                    UserName = email,
+                    Email = email,
+                    EmailConfirmed = true // Antrenör için e-posta doğrulaması gerekmez
+                };
+
+                var result = await _userManager.CreateAsync(trainerUser, password);
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                    }
+                    ViewData["GymBranchId"] = new SelectList(_context.GymBranches, "Id", "Name", trainer.GymBranchId);
+                    ViewBag.DayOfWeek = new SelectList(Enum.GetValues(typeof(DayOfWeek)).Cast<DayOfWeek>());
+                    ViewBag.Services = await _context.Services.Where(s => s.GymBranchId == trainer.GymBranchId).ToListAsync();
+                    return View(trainer);
+                }
+
+                // Trainer rolüne ekle
+                await _userManager.AddToRoleAsync(trainerUser, "Trainer");
+
+                // Trainer'a ApplicationUserId'yi ata
+                trainer.ApplicationUserId = trainerUser.Id;
+
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H5", location = "TrainersController.Create:145", message = "Before Add trainer", data = new { trainerId = trainer.Id, firstName = trainer.FirstName, lastName = trainer.LastName, gymBranchId = trainer.GymBranchId, applicationUserId = trainer.ApplicationUserId, databaseName = _context.Database.GetDbConnection().Database }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
+
                 _context.Add(trainer);
-                await _context.SaveChangesAsync();
+                
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H5", location = "TrainersController.Create:150", message = "Before SaveChangesAsync (trainer)", data = new { trainerId = trainer.Id }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
+                
+                var rowsAffected1 = await _context.SaveChangesAsync();
+                
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H5", location = "TrainersController.Create:156", message = "SaveChangesAsync completed (trainer)", data = new { rowsAffected = rowsAffected1, trainerId = trainer.Id, databaseName = _context.Database.GetDbConnection().Database }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
 
                 // Seçilen hizmetleri ekle
                 if (selectedServices != null)
@@ -102,7 +189,16 @@ namespace WebProjeGym.Controllers
                     }
                 }
 
-                await _context.SaveChangesAsync();
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H5", location = "TrainersController.Create:182", message = "Before SaveChangesAsync (services and availabilities)", data = new { trainerId = trainer.Id, selectedServicesCount = selectedServices?.Length ?? 0, availabilitiesCount = availabilities?.Count ?? 0 }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
+
+                var rowsAffected2 = await _context.SaveChangesAsync();
+                
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H5", location = "TrainersController.Create:188", message = "SaveChangesAsync completed (services and availabilities)", data = new { rowsAffected = rowsAffected2, trainerId = trainer.Id, databaseName = _context.Database.GetDbConnection().Database }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
+                TempData["SuccessMessage"] = "Antrenör başarıyla oluşturuldu. E-posta: " + email;
                 return RedirectToAction(nameof(Index));
             }
             ViewData["GymBranchId"] = new SelectList(_context.GymBranches, "Id", "Name", trainer.GymBranchId);
@@ -241,9 +337,33 @@ namespace WebProjeGym.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var trainer = await _context.Trainers.FindAsync(id);
+            var trainer = await _context.Trainers
+                .Include(t => t.Appointments)
+                .FirstOrDefaultAsync(t => t.Id == id);
+            
             if (trainer != null)
             {
+                // Antrenörün randevularını manuel olarak sil
+                var appointments = await _context.Appointments
+                    .Where(a => a.TrainerId == id)
+                    .ToListAsync();
+                
+                if (appointments.Any())
+                {
+                    _context.Appointments.RemoveRange(appointments);
+                }
+                
+                // Antrenörün TrainerService ilişkilerini manuel olarak sil
+                var trainerServices = await _context.TrainerServices
+                    .Where(ts => ts.TrainerId == id)
+                    .ToListAsync();
+                
+                if (trainerServices.Any())
+                {
+                    _context.TrainerServices.RemoveRange(trainerServices);
+                }
+                
+                // Antrenörü sil (TrainerAvailability cascade ile otomatik silinir)
                 _context.Trainers.Remove(trainer);
                 await _context.SaveChangesAsync();
             }

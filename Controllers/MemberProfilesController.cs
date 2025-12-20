@@ -97,6 +97,8 @@ namespace WebProjeGym.Controllers
             ModelState.Remove("memberProfile.ApplicationUser");
 
             // Sadece değiştirilebilir alanları güncelle
+            existingProfile.FirstName = memberProfile.FirstName;
+            existingProfile.LastName = memberProfile.LastName;
             existingProfile.HeightCm = memberProfile.HeightCm;
             existingProfile.WeightKg = memberProfile.WeightKg;
             existingProfile.Goal = memberProfile.Goal;

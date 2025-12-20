@@ -95,14 +95,25 @@ namespace WebProjeGym.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Appointment appointment)
         {
+            // #region agent log
+            try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H1", location = "AppointmentsController.Create:96", message = "Create POST entry", data = new { trainerId = appointment.TrainerId, serviceId = appointment.ServiceId, appointmentDate = appointment.AppointmentDate?.ToString(), appointmentTime = appointment.AppointmentTime?.ToString(), memberProfileId = appointment.MemberProfileId, durationMinutes = appointment.DurationMinutes, modelStateIsValid = ModelState.IsValid, modelStateErrors = ModelState.Where(x => x.Value?.Errors.Count > 0).Select(x => new { key = x.Key, errors = x.Value.Errors.Select(e => e.ErrorMessage).ToList() }).ToList() }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+            // #endregion
+
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H1", location = "AppointmentsController.Create:102", message = "User is null", data = new { }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
                 return NotFound();
             }
 
             var memberProfile = await _context.MemberProfiles
                 .FirstOrDefaultAsync(m => m.ApplicationUserId == user.Id);
+
+            // #region agent log
+            try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H1", location = "AppointmentsController.Create:110", message = "MemberProfile retrieved", data = new { memberProfileId = memberProfile?.Id, memberProfileExists = memberProfile != null }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+            // #endregion
 
             if (memberProfile == null)
             {
@@ -113,13 +124,26 @@ namespace WebProjeGym.Controllers
             if (appointment.AppointmentDate.HasValue && appointment.AppointmentTime.HasValue)
             {
                 appointment.StartDateTime = appointment.AppointmentDate.Value.Date.Add(appointment.AppointmentTime.Value);
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H3", location = "AppointmentsController.Create:120", message = "StartDateTime set", data = new { startDateTime = appointment.StartDateTime.ToString() }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
             }
             else
             {
-                ModelState.AddModelError("AppointmentDate", "Tarih ve saat seçimi zorunludur.");
+                if (!appointment.AppointmentDate.HasValue)
+                {
+                    ModelState.AddModelError("AppointmentDate", "Tarih seçimi zorunludur.");
+                }
+                if (!appointment.AppointmentTime.HasValue)
+                {
+                    ModelState.AddModelError("AppointmentTime", "Saat seçimi zorunludur.");
+                }
             }
 
             appointment.MemberProfileId = memberProfile.Id;
+            // #region agent log
+            try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H1", location = "AppointmentsController.Create:135", message = "MemberProfileId set", data = new { memberProfileId = appointment.MemberProfileId }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+            // #endregion
 
             // Antrenör ve hizmet bilgilerini yükle
             var trainer = await _context.Trainers
@@ -178,10 +202,10 @@ namespace WebProjeGym.Controllers
                 }
             }
 
-            // Çakışma kontrolü - Aynı antrenör aynı saatte başka randevu var mı?
+            // Çakışma kontrolü - Aynı antrenör aynı saatte onaylanmış veya bekleyen randevu var mı?
             var conflictingAppointment = await _context.Appointments
                 .Where(a => a.TrainerId == appointment.TrainerId
-                    && a.Status != AppointmentStatus.Cancelled
+                    && (a.Status == AppointmentStatus.Approved || a.Status == AppointmentStatus.Pending)
                     && a.Id != appointment.Id
                     && (
                         (appointment.StartDateTime >= a.StartDateTime && appointment.StartDateTime < a.StartDateTime.AddMinutes(a.DurationMinutes)) ||
@@ -201,18 +225,68 @@ namespace WebProjeGym.Controllers
             {
                 appointment.DurationMinutes = service.DurationMinutes;
                 appointment.Price = service.Price;
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H2", location = "AppointmentsController.Create:214", message = "DurationMinutes and Price set from service", data = new { durationMinutes = appointment.DurationMinutes, price = appointment.Price, serviceDuration = service.DurationMinutes, servicePrice = service.Price }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
             }
+            else
+            {
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H2", location = "AppointmentsController.Create:220", message = "Service is null, DurationMinutes not set", data = new { serviceId = appointment.ServiceId }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
+            }
+
+            // ModelState'den navigation property ve programatik olarak set edilen alanların hatalarını temizle
+            ModelState.Remove("MemberProfile");
+            ModelState.Remove("Trainer");
+            ModelState.Remove("Service");
+            ModelState.Remove("DurationMinutes"); // Service'ten set edildiği için validation hatasını temizle
+            ModelState.Remove("Price"); // Service'ten set edildiği için validation hatasını temizle
+
+            // #region agent log
+            try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H3", location = "AppointmentsController.Create:225", message = "Before ModelState.IsValid check", data = new { modelStateIsValid = ModelState.IsValid, memberProfileId = appointment.MemberProfileId, trainerId = appointment.TrainerId, serviceId = appointment.ServiceId, durationMinutes = appointment.DurationMinutes, startDateTime = appointment.StartDateTime.ToString(), modelStateErrors = ModelState.Where(x => x.Value?.Errors.Count > 0).Select(x => new { key = x.Key, errors = x.Value.Errors.Select(e => e.ErrorMessage).ToList() }).ToList() }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+            // #endregion
 
             if (ModelState.IsValid)
             {
                 appointment.Status = AppointmentStatus.Pending;
                 _context.Add(appointment);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Randevunuz başarıyla oluşturuldu. Onay bekleniyor.";
+                
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H4", location = "AppointmentsController.Create:255", message = "Before SaveChangesAsync", data = new { appointmentId = appointment.Id, memberProfileId = appointment.MemberProfileId, trainerId = appointment.TrainerId, serviceId = appointment.ServiceId, startDateTime = appointment.StartDateTime.ToString(), durationMinutes = appointment.DurationMinutes, price = appointment.Price, status = appointment.Status.ToString() }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
+                
+                try
+                {
+                    var rowsAffected = await _context.SaveChangesAsync();
+                    
+                    // #region agent log
+                    try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H4", location = "AppointmentsController.Create:262", message = "SaveChangesAsync completed", data = new { rowsAffected = rowsAffected, appointmentId = appointment.Id, databaseName = _context.Database.GetDbConnection().Database }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                    // #endregion
+                }
+                catch (Exception ex)
+                {
+                    // #region agent log
+                    try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run1", hypothesisId = "H4", location = "AppointmentsController.Create:268", message = "SaveChangesAsync exception", data = new { exceptionType = ex.GetType().Name, message = ex.Message, innerException = ex.InnerException?.Message, stackTrace = ex.StackTrace?.Substring(0, Math.Min(500, ex.StackTrace.Length)) }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                    // #endregion
+                    throw;
+                }
+                
+                TempData["SuccessMessage"] = "Randevunuz onaya gönderilmiştir. Antrenör onayı bekleniyor.";
                 return RedirectToAction(nameof(Index));
             }
 
             // Hata durumunda dropdown'ları tekrar doldur
+            // ModelState hatalarını TempData'ya ekle
+            var errorMessages = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .SelectMany(x => x.Value.Errors.Select(e => e.ErrorMessage))
+                .ToList();
+            
+            if (errorMessages.Any())
+            {
+                TempData["ErrorMessage"] = string.Join("<br/>", errorMessages);
+            }
             ViewData["TrainerId"] = new SelectList(
                 _context.Trainers
                     .Include(t => t.GymBranch)
@@ -340,11 +414,69 @@ namespace WebProjeGym.Controllers
             var dayOfWeek = selectedDate.DayOfWeek;
             var availabilities = await _context.TrainerAvailabilities
                 .Where(a => a.TrainerId == trainerId && a.DayOfWeek == dayOfWeek)
+                .ToListAsync();
+
+            // Onaylanmış randevuları al (o gün için)
+            var approvedAppointments = await _context.Appointments
+                .Where(a => a.TrainerId == trainerId 
+                    && a.Status == AppointmentStatus.Approved
+                    && a.StartDateTime.Date == selectedDate.Date)
                 .Select(a => new { 
-                    startTime = a.StartTime.ToString(@"hh\:mm"), 
-                    endTime = a.EndTime.ToString(@"hh\:mm") 
+                    startTime = a.StartDateTime.TimeOfDay, 
+                    endTime = a.EndDateTime.TimeOfDay 
                 })
                 .ToListAsync();
+
+            // Müsait saatleri hesapla - onaylanmış randevuları çıkar
+            var availableSlots = new List<object>();
+            foreach (var availability in availabilities)
+            {
+                var currentStart = availability.StartTime;
+                var endTime = availability.EndTime;
+
+                // Onaylanmış randevuları bu müsaitlik aralığına göre filtrele
+                var blockedSlots = approvedAppointments
+                    .Where(apt => 
+                        (apt.startTime >= currentStart && apt.startTime < endTime) ||
+                        (apt.endTime > currentStart && apt.endTime <= endTime) ||
+                        (apt.startTime <= currentStart && apt.endTime >= endTime))
+                    .OrderBy(apt => apt.startTime)
+                    .ToList();
+
+                if (blockedSlots.Count == 0)
+                {
+                    // Hiç engellenmemiş, tüm aralık müsait
+                    availableSlots.Add(new { 
+                        startTime = currentStart.ToString(@"hh\:mm"), 
+                        endTime = endTime.ToString(@"hh\:mm") 
+                    });
+                }
+                else
+                {
+                    // Engellenmiş saatleri çıkar
+                    var slotStart = currentStart;
+                    foreach (var blocked in blockedSlots)
+                    {
+                        if (slotStart < blocked.startTime)
+                        {
+                            // Engellenmeden önce müsait bir aralık var
+                            availableSlots.Add(new { 
+                                startTime = slotStart.ToString(@"hh\:mm"), 
+                                endTime = blocked.startTime.ToString(@"hh\:mm") 
+                            });
+                        }
+                        slotStart = blocked.endTime > slotStart ? blocked.endTime : slotStart;
+                    }
+                    // Son engellemeden sonra kalan süre
+                    if (slotStart < endTime)
+                    {
+                        availableSlots.Add(new { 
+                            startTime = slotStart.ToString(@"hh\:mm"), 
+                            endTime = endTime.ToString(@"hh\:mm") 
+                        });
+                    }
+                }
+            }
 
             // Antrenörün salon bilgilerini de gönder
             var trainer = await _context.Trainers
@@ -352,7 +484,7 @@ namespace WebProjeGym.Controllers
                 .FirstOrDefaultAsync(t => t.Id == trainerId);
 
             return Json(new { 
-                availabilities = availabilities,
+                availabilities = availableSlots,
                 gymBranchHours = trainer?.GymBranch != null ? new { 
                     openingTime = trainer.GymBranch.OpeningTime, 
                     closingTime = trainer.GymBranch.ClosingTime 

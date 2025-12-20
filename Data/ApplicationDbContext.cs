@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using WebProjeGym.Models;
 
@@ -18,6 +18,7 @@ namespace WebProjeGym.Data
         public DbSet<TrainerAvailability> TrainerAvailabilities { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<MemberProfile> MemberProfiles { get; set; }
+        public DbSet<AIRecommendation> AIRecommendations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -27,6 +28,8 @@ namespace WebProjeGym.Data
             builder.Entity<TrainerService>()
                 .HasKey(ts => new { ts.TrainerId, ts.ServiceId });
 
+            // TrainerService - Multiple cascade paths hatası nedeniyle Restrict
+            // Manuel silme controller'larda yapılacak
             builder.Entity<TrainerService>()
                 .HasOne(ts => ts.Trainer)
                 .WithMany(t => t.TrainerServices)
@@ -39,7 +42,8 @@ namespace WebProjeGym.Data
                 .HasForeignKey(ts => ts.ServiceId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Appointment ilişkilerinde birden fazla cascade path olmaması için silme davranışını Restrict yapıyoruz
+            // Appointment ilişkileri - Multiple cascade paths hatası nedeniyle Restrict
+            // Randevular controller'larda manuel olarak silinecek
             builder.Entity<Appointment>()
                 .HasOne(a => a.Trainer)
                 .WithMany(t => t.Appointments)
@@ -52,11 +56,26 @@ namespace WebProjeGym.Data
                 .HasForeignKey(a => a.ServiceId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Üye silinince randevuları silinmesin (geçmiş kayıtlar için)
             builder.Entity<Appointment>()
                 .HasOne(a => a.MemberProfile)
                 .WithMany()
                 .HasForeignKey(a => a.MemberProfileId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Trainer - ApplicationUser ilişkisi
+            builder.Entity<Trainer>()
+                .HasOne(t => t.ApplicationUser)
+                .WithMany()
+                .HasForeignKey(t => t.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // AIRecommendation - ApplicationUser ilişkisi
+            builder.Entity<AIRecommendation>()
+                .HasOne(ar => ar.ApplicationUser)
+                .WithMany()
+                .HasForeignKey(ar => ar.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

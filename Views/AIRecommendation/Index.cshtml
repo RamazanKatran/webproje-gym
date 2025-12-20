@@ -1,0 +1,111 @@
+@model WebProjeGym.Models.AIRecommendationRequest
+
+@{
+    ViewData["Title"] = "AI Öneri Sistemi";
+}
+
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1><i class="bi bi-robot"></i> AI Öneri Sistemi</h1>
+            <p class="text-muted">Kişiselleştirilmiş egzersiz ve beslenme programı önerileri alın</p>
+        </div>
+        <div>
+            <a asp-action="History" class="btn btn-outline-primary">
+                <i class="bi bi-clock-history"></i> Geçmiş Önerilerim
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> <strong>@TempData["Error"]</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-clipboard-data"></i> Öneri Formu</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="GetRecommendation" method="post" id="recommendationForm">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" style="@(ViewData.ModelState.IsValid ? "display:none;" : "")"></div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="HeightCm" class="form-label"></label>
+                            <input asp-for="HeightCm" class="form-control" type="number" min="100" max="250" placeholder="100-250 cm" />
+                            <span asp-validation-for="HeightCm" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="WeightKg" class="form-label"></label>
+                            <input asp-for="WeightKg" class="form-control" type="number" step="0.1" min="30" max="250" placeholder="30-250 kg" />
+                            <span asp-validation-for="WeightKg" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Age" class="form-label"></label>
+                            <input asp-for="Age" class="form-control" type="number" min="10" max="100" placeholder="10-100 arası" />
+                            <span asp-validation-for="Age" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="BodyType" class="form-label"></label>
+                            <select asp-for="BodyType" class="form-select">
+                                <option value="">Seçiniz...</option>
+                                <option value="Ektomorf">Ektomorf (İnce yapılı)</option>
+                                <option value="Mezomorf">Mezomorf (Atletik yapılı)</option>
+                                <option value="Endomorf">Endomorf (Yuvarlak yapılı)</option>
+                            </select>
+                            <span asp-validation-for="BodyType" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Goal" class="form-label"></label>
+                        <input asp-for="Goal" class="form-control" placeholder="Örn: Kilo verme, Kas geliştirme, Dayanıklılık artırma" />
+                        <span asp-validation-for="Goal" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="RecommendationType" class="form-label"></label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" asp-for="RecommendationType" value="@((int)WebProjeGym.Models.RecommendationType.Exercise)" class="btn-check" id="exerciseType" checked>
+                            <label class="btn btn-outline-primary" for="exerciseType">
+                                <i class="bi bi-activity"></i> Egzersiz Programı
+                            </label>
+
+                            <input type="radio" asp-for="RecommendationType" value="@((int)WebProjeGym.Models.RecommendationType.Diet)" class="btn-check" id="dietType">
+                            <label class="btn btn-outline-primary" for="dietType">
+                                <i class="bi bi-egg-fried"></i> Beslenme Programı
+                            </label>
+                        </div>
+                        <span asp-validation-for="RecommendationType" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-magic"></i> Öneri Al
+                        </button>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Ana Sayfaya Dön
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

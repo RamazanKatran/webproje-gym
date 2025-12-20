@@ -19,19 +19,34 @@ namespace WebProjeGym.Controllers
         // GET: GymBranches
         public async Task<IActionResult> Index()
         {
-            var gyms = await _context.GymBranches
-                .Include(g => g.Services)
-                .Include(g => g.Trainers)
-                .ToListAsync();
-
             // #region agent log
-            System.IO.File.AppendAllText(
-                "c:\\Users\\ASUS\\Desktop\\Hafta2Web\\WebProjeGym\\.cursor\\debug.log",
-                "{\"sessionId\":\"debug-session\",\"runId\":\"gym-index\",\"hypothesisId\":\"G4\",\"location\":\"GymBranchesController.Index\",\"message\":\"Index loaded\",\"data\":{\"count\":" 
-                + gyms.Count + "},\"timestamp\":" + DateTimeOffset.Now.ToUnixTimeMilliseconds() + "}\n");
+            try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run2", hypothesisId = "H2", location = "GymBranchesController.Index:22", message = "Index method entry", data = new { databaseName = _context.Database.GetDbConnection().Database }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
             // #endregion
 
-            return View(gyms);
+            try
+            {
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run2", hypothesisId = "H2", location = "GymBranchesController.Index:28", message = "Before query execution", data = new { }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
+
+                var gyms = await _context.GymBranches
+                    .Include(g => g.Services)
+                    .Include(g => g.Trainers)
+                    .ToListAsync();
+
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run2", hypothesisId = "H2", location = "GymBranchesController.Index:36", message = "Query executed successfully", data = new { count = gyms.Count }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
+
+                return View(gyms);
+            }
+            catch (Exception ex)
+            {
+                // #region agent log
+                try { await System.IO.File.AppendAllTextAsync(@"c:\Users\ASUS\Desktop\Hafta2Web\WebProjeGym\.cursor\debug.log", System.Text.Json.JsonSerializer.Serialize(new { sessionId = "debug-session", runId = "run2", hypothesisId = "H2", location = "GymBranchesController.Index:44", message = "Exception caught", data = new { exceptionType = ex.GetType().Name, message = ex.Message, innerException = ex.InnerException?.Message, stackTrace = ex.StackTrace != null ? ex.StackTrace.Substring(0, Math.Min(500, ex.StackTrace.Length)) : null }, timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }) + "\n"); } catch { }
+                // #endregion
+                throw;
+            }
         }
 
         // GET: GymBranches/Details/5
@@ -170,12 +185,86 @@ namespace WebProjeGym.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var gymBranch = await _context.GymBranches.FindAsync(id);
+            var gymBranch = await _context.GymBranches
+                .Include(g => g.Services)
+                .Include(g => g.Trainers)
+                .FirstOrDefaultAsync(g => g.Id == id);
+            
             if (gymBranch != null)
             {
+                // 1. GymBranch'e bağlı tüm Services'leri işle
+                var services = await _context.Services
+                    .Where(s => s.GymBranchId == id)
+                    .ToListAsync();
+                
+                foreach (var service in services)
+                {
+                    // Her Service için randevuları sil
+                    var serviceAppointments = await _context.Appointments
+                        .Where(a => a.ServiceId == service.Id)
+                        .ToListAsync();
+                    
+                    if (serviceAppointments.Any())
+                    {
+                        _context.Appointments.RemoveRange(serviceAppointments);
+                    }
+                    
+                    // Her Service için TrainerService ilişkilerini sil
+                    var serviceTrainerServices = await _context.TrainerServices
+                        .Where(ts => ts.ServiceId == service.Id)
+                        .ToListAsync();
+                    
+                    if (serviceTrainerServices.Any())
+                    {
+                        _context.TrainerServices.RemoveRange(serviceTrainerServices);
+                    }
+                }
+                
+                // 2. GymBranch'e bağlı tüm Trainers'ları işle
+                var trainers = await _context.Trainers
+                    .Where(t => t.GymBranchId == id)
+                    .ToListAsync();
+                
+                foreach (var trainer in trainers)
+                {
+                    // Her Trainer için randevuları sil
+                    var trainerAppointments = await _context.Appointments
+                        .Where(a => a.TrainerId == trainer.Id)
+                        .ToListAsync();
+                    
+                    if (trainerAppointments.Any())
+                    {
+                        _context.Appointments.RemoveRange(trainerAppointments);
+                    }
+                    
+                    // Her Trainer için TrainerService ilişkilerini sil
+                    var trainerTrainerServices = await _context.TrainerServices
+                        .Where(ts => ts.TrainerId == trainer.Id)
+                        .ToListAsync();
+                    
+                    if (trainerTrainerServices.Any())
+                    {
+                        _context.TrainerServices.RemoveRange(trainerTrainerServices);
+                    }
+                }
+                
+                // 3. Services'leri sil (TrainerAvailabilities cascade ile otomatik silinir)
+                if (services.Any())
+                {
+                    _context.Services.RemoveRange(services);
+                }
+                
+                // 4. Trainers'ları sil (TrainerAvailabilities cascade ile otomatik silinir)
+                if (trainers.Any())
+                {
+                    _context.Trainers.RemoveRange(trainers);
+                }
+                
+                // 5. Son olarak GymBranch'i sil
                 _context.GymBranches.Remove(gymBranch);
                 await _context.SaveChangesAsync();
             }
+            
             return RedirectToAction(nameof(Index));
         }
 

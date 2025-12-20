@@ -13,7 +13,7 @@ namespace WebProjeGym.Data
             var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
-            string[] roles = { "Admin", "Member" };
+            string[] roles = { "Admin", "Member", "Trainer" };
 
             // Roller yoksa oluştur
             foreach (string role in roles)
@@ -25,7 +25,7 @@ namespace WebProjeGym.Data
             }
 
             // Admin Kullanıcı oluştur
-            string adminEmail = "b211210000@sakarya.edu.tr"; // kendi numarana göre değiştir!
+            string adminEmail = "g231210076@sakarya.edu.tr"; // kendi numarana göre değiştir!
             string adminPassword = "sau";
 
             var adminUser = await userManager.FindByEmailAsync(adminEmail);

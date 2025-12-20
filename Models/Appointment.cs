@@ -7,7 +7,8 @@ namespace WebProjeGym.Models
     {
         Pending = 0,
         Approved = 1,
-        Cancelled = 2
+        Cancelled = 2,
+        Rejected = 3
     }
 
     public class Appointment
